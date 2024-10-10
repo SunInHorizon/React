@@ -88,12 +88,12 @@ function App() {
                 <form action="#" method="get">
                     <div>
                         <label for="firstname">First Name</label>
-                        <input type="text" name="firstname" id="firstname" value={formData.firstName} onChange={handleChange} placeholder="Enter First Name" required/>
+                        <input type="text" name="firstName" id="firstname" value={formData.firstName} onChange={handleChange} placeholder="Enter First Name" required/>
                         {errors.firstName && (<span className ="error">{errors.firstName}</span>)}
                     </div>
                     <div>
                         <label for="lastname">Last Name</label>
-                        <input type="text" name="lastname" id="lastname" value={formData.lastName} onChange={handleChange} placeholder="Enter Last Name" required/>
+                        <input type="text" name="lastName" id="lastname" value={formData.lastName} onChange={handleChange} placeholder="Enter Last Name" required/>
                         {errors.lastName && (<span className ="error">{errors.lastName}</span>)}
                     </div>
                     <div>
