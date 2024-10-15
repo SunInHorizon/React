@@ -9,8 +9,11 @@ function App() {
         email: '',
         contact: '',
         gender: '',
-        image: '',
+        password: '',
+        confirmPassword: '',
+        file: null,
     });
+    /*const [image, setImage] = useState({});*/
 
     const [errors, setErrors] = useState({});
 
@@ -23,11 +26,21 @@ function App() {
 
     const handleChange = (e) => {
          
-        const {name, value} = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
+        const {name, value, files} = e.target;
+        if(name === 'file')
+        {
+            setFormData({
+                ...formData,
+                [name]: files[0],
+            });
+        }
+        else
+        {
+            setFormData({
+                ...formData,
+                [name]: value,
+            });
+        }
     };
 
     const handleSubmit = (e) => {
@@ -35,33 +48,37 @@ function App() {
         const newErrors = validateForm(formData);
         setErrors(newErrors);
         /*console.log(
-            firstName,
-            lastName,
-            email,
-            contact,
-            gender,
-            image,
-        );
-        setFirstName("");
-        setLastName("");
-        setEmail("");
-        setContact("");
-        setGender("");
-        setImage("");*/
+            formData.firstName,
+            formData.lastName,
+            formData.email,
+            formData.contact,
+            formData.gender,
+            formData.image,
+        );*/
+        setFormData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            contact: '',
+            gender: '',
+            password: '',
+            confirmPassword: '',
+            image: '',
+        });
     };
 
     const validateForm = (data) => {
 
         const errors = {};
-        if(!data.firstName.trim())
+        if(!data.firstName)
         {
             errors.firstName = 'First Name is required';
         }
-        if(!data.lastName.trim())
+        if(!data.lastName)
         {
             errors.lastName = 'Last Name is required';
         }
-        if(!data.email.trim())
+        if(!data.email)
         {
             errors.email = 'Email is required';
         }
@@ -73,9 +90,21 @@ function App() {
         {
             errors.gender = 'Gender is required';
         }
-        if(!data.image)
+        if(!data.password)
         {
-            errors.image = 'Image is required';
+            errors.password = 'Password is required';
+        }
+        if(!data.confirmPassword)
+        {
+            errors.confirmPassword = 'Passwrod is reqired';
+        }
+        else if(data.confirmPassword !== data.password)
+        {
+            errors.confirmPassword = 'Password do not match';
+        }
+        if(!data.file)
+        {
+            errors.file = 'Image is required';
         }
 
         return errors;
@@ -85,7 +114,7 @@ function App() {
         <div className="App">
             <h1>FORM IN REACT</h1>
             <fieldset>
-                <form action="#" method="get">
+                <form action="#" method="get"  >
                     <div>
                         <label for="firstname">First Name</label>
                         <input type="text" name="firstName" id="firstname" value={formData.firstName} onChange={handleChange} placeholder="Enter First Name" required/>
@@ -115,6 +144,16 @@ function App() {
                         <input type="radio" name="gender" value="other" id="other" checked={formData.gender === "other"} onChange={handleChange}/>
                         Other<br></br>
                         {errors.gender && (<span className ="error">{errors.gender}</span>)}
+                    </div>
+                    <div>
+                        <label for="password">Password</label>
+                        <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Enter the Password"></input>
+                        {errors.password && (<span className="error">{errors.password}</span>)}
+                    </div>
+                    <div>
+                        <label for="confirmPassword">Confrim Password</label>
+                        <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Re-enter the Password"></input>
+                        {errors.confirmPassword && (<span className="error">{errors.confirmPassword}</span>)}
                     </div>
                     <div>
                         <label for="file">Upload Image</label>
