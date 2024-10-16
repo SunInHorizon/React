@@ -2,7 +2,7 @@ body {
   background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
   text-align: center;
 }
-.App {
+.form {
   background-color: #fff;
   border-radius: 15px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
@@ -11,13 +11,13 @@ body {
   width: 500px;
   text-align: center;
   margin: auto;
-  margin-top: 50px;
+  margin-top: 10px;
 }
 
 h1 {
   font-size: x-large;
   text-align: center;
-  color: black;
+  color: #fff;
 }
 
 fieldset {
@@ -85,10 +85,19 @@ textarea {
   margin-bottom: 10px;
 }
 
-table 
+.table 
 {
   border-collapse: collapse;
   width: 100%;
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  padding: 10px 20px;
+  transition: transform 0.2s;
+  width: 500px;
+  text-align: center;
+  margin: auto;
+  margin-top: 10px;
 }
 
 th, td 
@@ -97,4 +106,24 @@ th, td
   text-align: center;
   padding: 8px;
   
+}
+
+#edit
+{
+  text-align: center;
+  padding-right: 15px;
+  padding-left: 15px;
+
+}
+
+#delete
+{
+  text-align: center;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.button
+{
+  display: flex;
 }
