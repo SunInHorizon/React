@@ -2,6 +2,8 @@ import "./App.css";
 import { React, useState } from "react";
 import {nanoid} from "nanoid";
 import {StyleSheet} from "react-native";
+import { database } from './firebase'; 
+import { ref, set } from 'firebase/database';
 
 function App() {
 
@@ -56,46 +58,42 @@ function App() {
         e.preventDefault();
         const newErrors = validateForm(formData);
         setErrors(newErrors);
-        
+    
         console.log(formData.firstName, formData.lastName, formData.email, formData.contact, formData.gender);
-
-       if(Object.keys(newErrors).length === 0)
-       {
-        if (isEditing) 
-        {
-            setNewData(newData.map((data) => 
-                data.id === editId ? { ...data, ...formData } : data
-            ));
-            setIsEditing(false);
-            setEditId(null);
+        if (Object.keys(newErrors).length === 0) {
+            if (isEditing) {
+                setNewData(newData.map((data) =>
+                    data.id === editId ? { ...data, ...formData } : data
+                ));
+                setIsEditing(false);
+                setEditId(null);
+            } else {
+                const newDataEntry = {
+                    id: nanoid(),
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    email: formData.email,
+                    contact: formData.contact,
+                    gender: formData.gender,
+                };
+                setNewData([...newData, newDataEntry]);
+                document.getElementById("tbl").style.display = "";
+    
+                // Store data in Firebase Realtime Database
+                set(ref(database, 'users/' + newDataEntry.id), newDataEntry);
+    
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    contact: '',
+                    gender: '',
+                    password: '',
+                    confirmPassword: '',
+                    file: null,
+                });
+            }
         }
-        else
-        {
-            const newDataEntry = {
-                id: nanoid(),
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                contact: formData.contact,
-                gender: formData.gender,
-            };
-
-            setNewData([...newData, newDataEntry]);
-
-            document.getElementById("tbl").style.display = "";
-            setFormData({
-                firstName: '',
-                lastName: '',
-                email: '',
-                contact: '',
-                gender: '',
-                password: '',
-                confirmPassword: '',
-                file: '',
-            });
-        }
-            
-       }
     };
 
     const handleEdit = (id) => 
