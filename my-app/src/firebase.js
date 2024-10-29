@@ -1,15 +1,17 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 
+console.log("API Key:", process.env.REACT_APP_FIREBASE_API_KEY);
+
 const firebaseConfig = {
-  apiKey: "AIzaSyBAMq378ywoSq4z8qFNxJu92EVON54ejZs",
-  authDomain: "form-1cdd8.firebaseapp.com",
-  databaseURL: "https://form-1cdd8-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "form-1cdd8",
-  storageBucket: "form-1cdd8.appspot.com",
-  messagingSenderId: "194448504691",
-  appId: "1:194448504691:web:c46ffb8bd8ace28e8eb706",
-  measurementId: "G-N1NBE0QL69"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
