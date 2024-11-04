@@ -3,7 +3,7 @@ import { React, useState } from "react";
 import {nanoid} from "nanoid";
 import {StyleSheet} from "react-native";
 import { database } from './firebase'; 
-import { ref, set } from 'firebase/database';
+import { ref, set, update } from 'firebase/database';
 
 function App() {
 
@@ -62,11 +62,15 @@ function App() {
         console.log(formData.firstName, formData.lastName, formData.email, formData.contact, formData.gender);
         if (Object.keys(newErrors).length === 0) {
             if (isEditing) {
-                setNewData(newData.map((data) =>
+                const updatedData = newData.map((data) =>
                     data.id === editId ? { ...data, ...formData } : data
-                ));
+                );
+                setNewData(updatedData);
                 setIsEditing(false);
                 setEditId(null);
+    
+                // Update data in Firebase Realtime Database
+                update(ref(database, 'users/' + editId), formData);
             } else {
                 const newDataEntry = {
                     id: nanoid(),
