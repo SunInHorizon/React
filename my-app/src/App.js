@@ -1,9 +1,9 @@
 import "./App.css";
-import { React, useState } from "react";
+import { React, useEffect, useState } from "react";
 import {nanoid} from "nanoid";
 import {StyleSheet} from "react-native";
 import { database } from './firebase'; 
-import { ref, set, update } from 'firebase/database';
+import { collection, addDoc, doc, updateDoc, getDocs } from 'firebase/firestore';
 
 function App() {
 
@@ -23,11 +23,28 @@ function App() {
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState(null);
 
-    const styles = StyleSheet.create({
-        image: {
-            display: "none"
-        }
-    })
+     const styles = StyleSheet.create({
+         image: {
+             display: "none"
+         }
+     })
+
+    useEffect(()=>{
+        async function getCollectionData() {
+            try {
+              const querySnapshot = await getDocs(collection(database, "users"));
+              const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              console.log("data" , data);
+              return data;
+            } catch (error) {
+              console.error("Error fetching collection data:", error);
+            }
+          }
+          
+          console.log("useEffect");
+          // Call the function
+          getCollectionData();
+    },[]);
 
     const handleChange = (e) => {
          
@@ -54,7 +71,7 @@ function App() {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = validateForm(formData);
         setErrors(newErrors);
@@ -70,7 +87,9 @@ function App() {
                 setEditId(null);
     
                 // Update data in Firebase Realtime Database
-                update(ref(database, 'users/' + editId), formData);
+                const docRef = doc(database, 'users', editId);
+                await updateDoc(docRef, formData);
+
             } else {
                 const newDataEntry = {
                     id: nanoid(),
@@ -82,9 +101,16 @@ function App() {
                 };
                 setNewData([...newData, newDataEntry]);
                 document.getElementById("tbl").style.display = "";
-    
+                
+                console.log("newDataEntry", newDataEntry);
+
                 // Store data in Firebase Realtime Database
-                set(ref(database, 'users/' + newDataEntry.id), newDataEntry);
+                try {
+                    console.log("saving data");
+                    await addDoc(collection(database, 'users'), newDataEntry);
+                } catch (error) {
+                    console.log("inside error "+error);
+                }
     
                 setFormData({
                     firstName: '',
