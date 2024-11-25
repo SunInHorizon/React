@@ -1,12 +1,9 @@
 import "./App.css";
-import { React, useEffect, useState } from "react";
-import {nanoid} from "nanoid";
-import {StyleSheet} from "react-native";
-import { database } from './firebase'; 
-import { collection, addDoc, doc, updateDoc, getDocs } from 'firebase/firestore';
+import { React, useState, useEffect } from "react";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { database } from "./firebase";
 
 function App() {
-
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -15,128 +12,63 @@ function App() {
         gender: '',
         password: '',
         confirmPassword: '',
-        file: null,
     });
 
     const [errors, setErrors] = useState({});
-    var [newData, setNewData] = useState([]);
-    const [isEditing, setIsEditing] = useState(false);
+    const [data, setData] = useState([]);
     const [editId, setEditId] = useState(null);
 
-     const styles = StyleSheet.create({
-         image: {
-             display: "none"
-         }
-     })
+    useEffect(() => {
+        fetchData();
+    }, []);
 
-    useEffect(()=>{
-        async function getCollectionData() {
-            try {
-              const querySnapshot = await getDocs(collection(database, "users"));
-              const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-              console.log("data" , data);
-              return data;
-            } catch (error) {
-              console.error("Error fetching collection data:", error);
-            }
-          }
-          
-          console.log("useEffect");
-          // Call the function
-          getCollectionData();
-    },[]);
+    const fetchData = async () => {
+        const querySnapshot = await getDocs(collection(database, "users"));
+        const documents = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        setData(documents);
+    };
 
     const handleChange = (e) => {
-         
-        const {name} = e.target;
-        if(name === 'file')
-        {
-            const fieldName = e.target.getAttribute("name");
-            const fieldValue = e.target.files[0];
-
-            const newFormData = {...formData};
-            newFormData[fieldName] = fieldValue;
-
-            setFormData(newFormData);
-        }
-        else
-        {
-            const fieldName = e.target.getAttribute("name");
-            const fieldValue = e.target.value;
-
-            const newFormData = {...formData};
-            newFormData[fieldName] = fieldValue;
-
-            setFormData(newFormData);  
-        }
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = validateForm(formData);
-        setErrors(newErrors);
-    
-        console.log(formData.firstName, formData.lastName, formData.email, formData.contact, formData.gender);
         if (Object.keys(newErrors).length === 0) {
-            if (isEditing) {
-                const updatedData = newData.map((data) =>
-                    data.id === editId ? { ...data, ...formData } : data
-                );
-                setNewData(updatedData);
-                setIsEditing(false);
+            if (editId) {
+                await updateDoc(doc(database, "users", editId), formData);
                 setEditId(null);
-    
-                // Update data in Firebase Realtime Database
-                const docRef = doc(database, 'users', editId);
-                await updateDoc(docRef, formData);
-
             } else {
-                const newDataEntry = {
-                    id: nanoid(),
-                    firstName: formData.firstName,
-                    lastName: formData.lastName,
-                    email: formData.email,
-                    contact: formData.contact,
-                    gender: formData.gender,
-                };
-                setNewData([...newData, newDataEntry]);
-                document.getElementById("tbl").style.display = "";
-                
-                console.log("newDataEntry", newDataEntry);
-
-                // Store data in Firebase Realtime Database
-                try {
-                    console.log("saving data");
-                    await addDoc(collection(database, 'users'), newDataEntry);
-                } catch (error) {
-                    console.log("inside error "+error);
-                }
-    
-                setFormData({
-                    firstName: '',
-                    lastName: '',
-                    email: '',
-                    contact: '',
-                    gender: '',
-                    password: '',
-                    confirmPassword: '',
-                    file: null,
-                });
+                await addDoc(collection(database, "users"), formData);
             }
+            setFormData({
+                firstName: '',
+                lastName: '',
+                email: '',
+                contact: '',
+                gender: '',
+                password: '',
+                confirmPassword: '',
+            });
+            fetchData();
+        } else {
+            setErrors(newErrors);
         }
     };
 
-    const handleEdit = (id) => 
-    {
-        const dataToEdit = newData.find((data) => data.id === id);
-        setFormData(dataToEdit);
-        setIsEditing(true);
-        setEditId(id);
+    const handleDelete = async (docId) => {
+        await deleteDoc(doc(database, "users", docId));
+        fetchData();
     };
 
-    const handleDelete = (id) => 
-    {
-        setNewData(newData.filter((data) => data.id !== id));
+    const handleEdit = (item) => {
+        setFormData(item);
+        setEditId(item.id);
     };
 
     const validateForm = (data) => {
@@ -174,48 +106,41 @@ function App() {
         {
             errors.confirmPassword = 'Password do not match';
         }
-        if(!data.file)
-        {
-            errors.file = 'Image is required';
-        }
 
         return errors;
     };
 
     return (
-        <div>
+        <div className="App">
             <h1>FORM IN REACT</h1>
             <fieldset>
-                <form action="#" method="get" className="form">
+                <form onSubmit={handleSubmit} action="#" method="get" className="form">
                     <div>
-                        <label>First Name</label>
-                        <input type="text" name="firstName" id="firstname" value={formData.firstName} onChange={handleChange} placeholder="Enter First Name" required/>
-                        {errors.firstName && (<span className ="error">{errors.firstName}</span>)}
+                        <label htmlFor="firstname">First Name</label>
+                        <input type="text" name="firstName" id="firstname" value={formData.firstName} onChange={handleChange} placeholder="Enter First Name" required />
+                        {errors.firstName && (<span className="error">{errors.firstName}</span>)}
                     </div>
                     <div>
-                        <label>Last Name</label>
-                        <input type="text" name="lastName" id="lastname" value={formData.lastName} onChange={handleChange} placeholder="Enter Last Name" required/>
-                        {errors.lastName && (<span className ="error">{errors.lastName}</span>)}
+                        <label htmlFor="lastname">Last Name</label>
+                        <input type="text" name="lastName" id="lastname" value={formData.lastName} onChange={handleChange} placeholder="Enter Last Name" required />
+                        {errors.lastName && (<span className="error">{errors.lastName}</span>)}
                     </div>
                     <div>
-                        <label>Enter Email</label>
-                        <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} placeholder="Enter email" required/>
-                        {errors.email && (<span className ="error">{errors.email}</span>)}
+                        <label htmlFor="email">Enter Email</label>
+                        <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} placeholder="Enter email" required />
+                        {errors.email && (<span className="error">{errors.email}</span>)}
                     </div>
                     <div>
-                        <label>Contact</label>
-                        <input type="tel" name="contact" id="contact" value={formData.contact} onChange={handleChange} placeholder="Enter Mobile number" required/>
-                        {errors.contact && (<span className ="error">{errors.contact}</span>)}
+                        <label htmlFor="tel">Contact</label>
+                        <input type="tel" name="contact" id="contact" value={formData.contact} onChange={handleChange} placeholder="Enter Mobile number" required />
+                        {errors.contact && (<span className="error">{errors.contact}</span>)}
                     </div>
                     <div>
-                        <label>Gender</label>
-                        <input type="radio" name="gender" value="Male" id="male" checked={formData.gender === "Male"} onChange={handleChange}/>
-                        Male
-                        <input type="radio" name="gender" value="Female" id="female" checked={formData.gender === "Female"} onChange={handleChange}/>
-                        Female
-                        <input type="radio" name="gender" value="Other" id="other" checked={formData.gender === "Other"} onChange={handleChange}/>
-                        Other<br></br>
-                        {errors.gender && (<span className ="error">{errors.gender}</span>)}
+                        <label htmlFor="gender">Gender</label>
+                        <input type="radio" name="gender" value="male" id="male" checked={formData.gender === "male"} onChange={handleChange} /> Male
+                        <input type="radio" name="gender" value="female" id="female" checked={formData.gender === "female"} onChange={handleChange} /> Female
+                        <input type="radio" name="gender" value="other" id="other" checked={formData.gender === "other"} onChange={handleChange} /> Other<br />
+                        {errors.gender && (<span className="error">{errors.gender}</span>)}
                     </div>
                     <div>
                         <label>Password</label>
@@ -227,16 +152,12 @@ function App() {
                         <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Re-enter the Password"></input>
                         {errors.confirmPassword && (<span className="error">{errors.confirmPassword}</span>)}
                     </div>
-                    <div>
-                        <label>Upload Image</label>
-                        <input type="file" name="file" id="file" onChange={handleChange} placeholder="Enter Upload File" required/>
-                        {errors.image && (<span className ="error">{errors.image}</span>)}
-                    </div>
-                    <button type="submit" value="Submit" onClick={(e) => handleSubmit(e)}>Submit</button>
+                    <button type="submit">{editId ? "Update" : "Submit"}</button>
                 </form>
             </fieldset>
 
-            <table className="table" style={styles.image} id="tbl">
+            <h2>DATA</h2>
+            <table className="table" id="tbl">
                 <thead>
                     <tr>
                         <th>First Name</th>
@@ -244,24 +165,25 @@ function App() {
                         <th>Email</th>
                         <th>Contact</th>
                         <th>Gender</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                       {newData.map((data) => (
-                         <tr key={data.id}>
-                            <td>{data.firstName}</td>
-                            <td>{data.lastName}</td>
-                            <td>{data.email}</td>
-                            <td>{data.contact}</td>
-                            <td>{data.gender}</td>
+                    {data.map(item => (
+                        <tr key={item.id}>
+                            <td>{item.firstName}</td>
+                            <td>{item.lastName}</td>
+                            <td>{item.email}</td>
+                            <td>{item.contact}</td>
+                            <td>{item.gender}</td>
                             <td>
-                               <div className="button">
-                                    <button onClick={() => handleEdit(data.id)} id="edit">Edit</button>
-                                    <button onClick={() => handleDelete(data.id)} id="delete">Delete</button>
-                               </div>
+                                <div className="button">
+                                <button onClick={() => handleEdit(item)} id="edit">Edit</button>
+                                <button onClick={() => handleDelete(item.id)} id="delete">Delete</button>
+                                </div>
                             </td>
                         </tr>
-                       ))}
+                    ))}
                 </tbody>
             </table>
         </div>
