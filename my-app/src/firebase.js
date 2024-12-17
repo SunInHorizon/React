@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { getAuth } from "firebase/auth";
 
 console.log("API Key:", process.env.REACT_APP_FIREBASE_API_KEY);
 
@@ -23,7 +24,11 @@ const firebaseConfig = {
   measurementId: "G-EH1QX33G3J"
 };
 
+
+
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const database = getFirestore(app);
 
-export { database };
+
+export { database, auth };

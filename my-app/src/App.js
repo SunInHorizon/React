@@ -1,7 +1,9 @@
 import "./App.css";
 import { React, useState, useEffect } from "react";
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { database } from "./firebase";
+import { database, auth } from "./firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth"; 
+import Login from "./login";
 
 function App() {
     const [formData, setFormData] = useState({
@@ -17,9 +19,20 @@ function App() {
     const [errors, setErrors] = useState({});
     const [data, setData] = useState([]);
     const [editId, setEditId] = useState(null);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        fetchData();
+        onAuthStateChanged(auth, (currentUser) => { 
+            setUser(currentUser); 
+            if (currentUser) 
+            { 
+                fetchData(); 
+            } 
+            else 
+            { 
+                setData([]); 
+            } 
+        });
     }, []);
 
     const fetchData = async () => {
@@ -110,8 +123,17 @@ function App() {
         return errors;
     };
 
+    const handleLogout = async () => { 
+        await signOut(auth); 
+    };
+
+    if (!user) { 
+        return <Login onLogin={() => setUser(auth.currentUser)} />; 
+    }
+
     return (
         <div className="App">
+            <button onClick={handleLogout}>LOGOUT</button>
             <h1>FORM IN REACT</h1>
             <fieldset>
                 <form onSubmit={handleSubmit} action="#" method="get" className="form">
