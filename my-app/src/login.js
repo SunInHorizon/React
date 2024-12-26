@@ -1,12 +1,13 @@
+// Login.js
 import { React, useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "./firebase";
-import "./App.css";
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,9 +19,18 @@ const Login = ({ onLogin }) => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setResetMessage("Password reset email sent!");
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   return (
     <div className="login">
-      <h2>Login</h2>
+      <h2 id="log">LOGIN</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="email"
@@ -28,8 +38,7 @@ const Login = ({ onLogin }) => {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
         />
-        <br>
-        </br>
+        <br></br>
         <input
           type="password"
           value={password}
@@ -38,7 +47,9 @@ const Login = ({ onLogin }) => {
         />
         <button type="submit">Login</button>
       </form>
+      <button onClick={handleForgotPassword}>Forgot Password</button>
       {error && <p>{error}</p>}
+      {resetMessage && <p>{resetMessage}</p>}
     </div>
   );
 };

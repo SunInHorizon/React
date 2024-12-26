@@ -27,7 +27,7 @@ body {
   margin-top: 200px;
 }
 
-h1 {
+h1, h2 {
   font-size: x-large;
   text-align: center;
   color: #fff;
@@ -139,4 +139,15 @@ th, td
 .button
 {
   display: flex;
+}
+
+.link
+{
+  color: #fff;
+  text-align: center;
+}
+
+#log
+{
+  color: black;
 }
