@@ -15,7 +15,7 @@ const Login = ({ onLogin }) => {
       await signInWithEmailAndPassword(auth, email, password);
       onLogin();
     } catch (error) {
-      setError(error.message);
+      setError(error.message = 'EMAIL OR PASSWORD IS WRONG');
     }
   };
 
@@ -47,9 +47,9 @@ const Login = ({ onLogin }) => {
         />
         <button type="submit">Login</button>
       </form>
+      {error && <p className="red">{error}</p>}
       <button onClick={handleForgotPassword}>Forgot Password</button>
-      {error && <p>{error}</p>}
-      {resetMessage && <p>{resetMessage}</p>}
+      {resetMessage && <p className="red">{resetMessage}</p>}
     </div>
   );
 };
